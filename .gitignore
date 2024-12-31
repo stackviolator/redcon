@@ -2,6 +2,5 @@
 __pycache__/
 __pycache__/*
 scans/
-logs/
 TODO.md
 .vscode/
