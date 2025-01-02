@@ -1,2 +1,4 @@
+pymilvus
+"pymilvus[model]"
 openai
 ollama

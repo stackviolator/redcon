@@ -7,3 +7,4 @@ TODO.md
 .vscode/
 scope.txt
 wiki/
+*.db
