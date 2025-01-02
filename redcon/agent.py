@@ -2,7 +2,7 @@ import json
 from logger import Logger
 import os
 from openai import OpenAI
-import rag
+from rag import VDBClient
 import subprocess
 
 class Agent:
@@ -14,7 +14,7 @@ class Agent:
         self.set_system_prompt(self.read_system_prompt("system_prompt.txt"))
         self.init_tools()
         self.logger = Logger()
-        self.vdb = rag.gen_vector_db()
+        self.vdbc = VDBClient()
 
     def set_api_key(self, filepath: str = '.env'):
         """
@@ -149,7 +149,7 @@ class Agent:
         Query vector DB for RAG
         """
         query = arguments.get("query")
-        return rag.retrieve(self.vdb, query)
+        return self.vdbc.retrieve(query)
 
     def write_analysis(self, arguments: dict):
         """
