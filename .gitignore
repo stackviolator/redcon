@@ -8,3 +8,4 @@ TODO.md
 scope.txt
 wiki/
 *.db
+.DS_Store
