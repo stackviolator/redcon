@@ -322,10 +322,12 @@ class Agent:
         - Avoid using nmap scripts unless explicitly whitelisted
         - Organize all scan results in the scans/ directory
         - When you overall task is completed, return with a message saying "FINISHED". Do not add any formatting or additional characters
+        - You have access to your organization's testing methodology, you can access this through a tool call to the vector database
 
 
-        You are currently in development. In development, the scope of your duties are abridged. For this overall task, only identify the available hosts, and the services available on the hosts. Once hosts are services are identified, consolidate the information and descrive the network, machines, and services in 'analysis.txt'. Provide relavent data.
+        You are currently in development. In development, the scope of your duties are abridged. For this overall task, find all domain controllers on the current network.
         """
+        # You are currently in development. In development, the scope of your duties are abridged. For this overall task, only identify the available hosts, and the services available on the hosts. Once hosts are services are identified, consolidate the information and descrive the network, machines, and services in 'analysis.txt'. Provide relavent data.
 
         return prompt
 

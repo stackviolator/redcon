@@ -2,6 +2,8 @@ import pymilvus
 from pymilvus import MilvusClient
 from pymilvus import model
 import os
+import re
+from transformers import AutoTokenizer
 
 class VDBClient:
     def __init__(self, db="redcon.db", dim=768, collection_name="default", embedding_fn=model.DefaultEmbeddingFunction()):
@@ -18,10 +20,28 @@ class VDBClient:
         self.gen_vector_db()
 
 
-    def populate_db(self, client, wiki_dir='wiki/'):
+    def populate_db(self, wiki_dir='wiki/'):
         """
         Load the dataset and embed as vectors. Insert embedded vectors to the db
         """
+        def split_by_markdown_heading(text):
+            """
+            Use rege to split line starting with # (markdown heading)
+            """
+            return re.split(r'(?m)^#', text)
+        
+        def split_by_tokens(text, tokenizer, max_tokens=512):
+            """
+            Split the input text into max_tokens chunks
+            """
+            max_tokens = max_tokens - 10 # milnus does not specify their default tokenizer :( -- therefore splitting at the max token level can cause a mismatch
+            tokenizer = AutoTokenizer.from_pretrained(tokenizer)
+            tokens = tokenizer.encode(text, add_special_tokens=False)
+            token_chunks = [tokens[i:i + max_tokens] for i in range(0, len(tokens), max_tokens)]
+            text_chunks = [tokenizer.decode(chunk, skip_special_tokens=True) for chunk in token_chunks]
+
+            return text_chunks
+
         print("[+] Loading dataset into DB...")
         dataset = []
 
@@ -33,8 +53,11 @@ class VDBClient:
             if os.path.isfile(file_path):
                 try:
                     with open(file_path, 'r', encoding='utf-8') as file:
-                        for line in file:
-                            dataset.append(line)
+                        content = file.read()
+                        sections = split_by_markdown_heading(content)
+                        for section in sections:
+                            if section.strip():
+                                dataset.extend(split_by_tokens(section, tokenizer="GPTCache/paraphrase-albert-small-v2"))
                 except Exception as e:
                     print(f"Error reading {file_name}: {e}")
 
@@ -45,7 +68,7 @@ class VDBClient:
                     for i in range(len(vectors))
                 ]
 
-                client.insert(collection_name=self.collection_name, data=data)
+                self.client.insert(collection_name=self.collection_name, data=data)
                 # Reset dataset
                 dataset = []
 
@@ -60,21 +83,26 @@ class VDBClient:
                 collection_name =self.collection_name,
                 dimension=self.dim,
             )
-            self.fpopulate_db(self.embedding_fn, self.client, collection_name=self.collection_name)
+            self.populate_db()
 
         # Prompt user to reinsert data, default is no
         else:
             while True:
-                b_insert = input(f"[+] Vector DB found with collection \"{self.collection_name}\", do you want to re-insert the dataset? y/N\n>> ")
+                b_insert = input(f"[+] Vector DB found with collection \"{self.collection_name}\", do you want to recreate it? y/N\n>> ")
                 if b_insert == "n" or b_insert == "N" or b_insert == "":
                     break
                 elif b_insert == "y" or b_insert == "Y":
-                    self.populate_db(self.embedding_fn, self.client, collection_name=self.collection_name)
+                    self.client.drop_collection(collection_name=self.collection_name)
+                    self.client.create_collection(
+                        collection_name =self.collection_name,
+                        dimension=self.dim,
+                    )
+                    self.populate_db(wiki_dir="temp/")
                     break
 
         print(f"[+] Vector DB created successfully")
 
-    def retrieve(self, query, top_n=3):
+    def retrieve(self, query, top_n=5):
         """
         Embed query and return topn most similar chunks
         """
