@@ -1,0 +1,30 @@
+analysis: # Reconnaissance Analysis of 192.168.1.0/24
+
+## Hosts Found:
+
+### Host: thefarm.attlocal.net (192.168.1.180)
+- **Ports Open**:
+  - 22/tcp (SSH)
+  - 80/tcp (HTTP)
+- **Port Closed**:
+  - 443/tcp (HTTPS)
+
+### Host: 192.168.1.183
+- **All Ports Closed**:
+  - 22/tcp (SSH)
+  - 80/tcp (HTTP)
+  - 443/tcp (HTTPS)
+
+### Host: dsldevice.attlocal.net (192.168.1.254)
+- **Ports Open**:
+  - 80/tcp (HTTP)
+  - 443/tcp (HTTPS)
+- **Port Closed**:
+  - 22/tcp (SSH)
+
+## Summary
+- Total hosts with open SSH: 1
+- Total hosts with open HTTP: 2
+- Total hosts with open HTTPS: 1
+
+This scan identified several hosts with potential entry points via open SSH and HTTP services, providing a basis for further targeted testing on these protocols.

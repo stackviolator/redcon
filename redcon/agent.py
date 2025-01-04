@@ -6,15 +6,23 @@ from rag import VDBClient
 import subprocess
 
 class Agent:
-    def __init__(self):
-        self.set_api_key()
-        self.client = OpenAI()
+    def __init__(self, model="llama3.1:8b"):
+        self.model = model
+        if self.model == "llama3.1:8b":
+            self.client = OpenAI(
+                base_url = 'http://localhost:11434/v1',
+                api_key='ollama', # required, but unused
+            )
+        else:
+            self.set_api_key()
+            self.client = OpenAI()
         self.memory = []
         self.max_memory = 10
         self.set_system_prompt(self.read_system_prompt("system_prompt.txt"))
         self.init_tools()
         self.logger = Logger()
         self.vdbc = VDBClient()
+        self.retrieved = ""
 
     def set_api_key(self, filepath: str = '.env'):
         """
@@ -55,101 +63,17 @@ class Agent:
         """
         Initialize base tools and add them to store
         """
-        tools = [
-        {
-            "type": "function",
-            "function": {
-                "name": "run_nmap_scan",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "args": {"type": "string"}
-                        },
-                    },
-                },
-            },
-        {
-            "type": "function",
-            "function": {
-                "name": "update_memory",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "memory": {"type": "string"}
-                        },
-                    },
-                },
-            },
-        {
-            "type": "function",
-            "function": {
-                "name": "read_file",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "filename": {"type": "string"}
-                        },
-                    },
-                },
-            },
-        {
-            "type": "function",
-            "function": {
-                "name": "mkdir",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "name": {"type": "string"}
-                        },
-                    },
-                },
-            },
-        {
-            "type": "function",
-            "function": {
-                "name": "rmdir",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "name": {"type": "string"}
-                        },
-                    },
-                },
-            },
-        {
-            "type": "function",
-            "function": {
-                "name": "write_analysis",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "analysis": {"type": "string"}
-                        },
-                    },
-                },
-            },
-        {
-            "type": "function",
-            "function": {
-                "name": "rag_query",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "query": {"type": "string"}
-                        },
-                    },
-                },
-            },
-        ]
-        
-        self.tools = tools
+        with open('redcon/tools.json', 'r') as f:
+            data = json.load(f)
+
+        self.tools = data
 
     def rag_query(self, arguments: dict) -> str:
         """
         Query vector DB for RAG
         """
         query = arguments.get("query")
-        return self.vdbc.retrieve(query)
+        self.retrieved = self.vdbc.retrieve(query)
 
     def write_analysis(self, arguments: dict):
         """
@@ -227,7 +151,6 @@ class Agent:
             "return_code": result.returncode
         })
 
-
     def update_memory(self, arguments: dict | str):
         """
         Add to self memory
@@ -278,7 +201,7 @@ class Agent:
             except Exception as e:
                 print(f"[-] Error calling method '{call.function.name}': {e}")
                 output = None
-            self.logger.log(data, output)
+            self.logger.log(data, output, self.model)
             self.update_memory(f"Tool call: {call.function.name} {call.function.arguments}\nOutput: {output}")
 
 
@@ -287,7 +210,7 @@ class Agent:
         Call the API
         """
         completion = self.client.chat.completions.create(
-            model="gpt-4o",
+            model=self.model,
             messages=[
                 {"role": "system", "content": self.system_prompt},
                 {
@@ -299,7 +222,7 @@ class Agent:
         )
 
         output = completion.choices[0].message
-        self.logger.log(prompt, output.content)
+        self.logger.log(prompt, output.content, self.model)
         print(f"Returned output is : {output.content}")
         if "FINISHED" in str(output.content):
             return False
@@ -309,26 +232,32 @@ class Agent:
         return True
 
     def build_prompt(self) -> str:
-        context = "\n".join(self.memory)
+        context = "\n- ".join(self.memory)
         prompt = f"""
-        Your goal is to perform reconaissance on the given scope found in './scope.txt'. You will autonomously perform these actions.
-        Here is a list of previous actions taken:
-        {context}
-
-        Instructions:
+        Your goal is to perform reconaissance on the given scope found in './scope.txt'. You will autonomously perform these actions.\nHere is a list of previous actions taken:
+        """
+        prompt += context
+        prompt += """\nInstructions:
         - Always give a written justification for you task
         - Decide whether to use a tool, update memory, or read memory
         - Only use tools when you are confident in your action and have a clear plan with a justification for doing so
         - Avoid using nmap scripts unless explicitly whitelisted
+        - Ensure scanning is efficient as possible. Take into consideration the resilency of the targets if increasing scan speeds.
         - Organize all scan results in the scans/ directory
         - When you overall task is completed, return with a message saying "FINISHED". Do not add any formatting or additional characters
         - You have access to your organization's testing methodology, you can access this through a tool call to the vector database
+        - When you write your analysis, include pertinent information such as hosts, services, ports, and vulnerabilities that were found during recon. Use markdown format for your analysis.
+        - Queried documentation is denoted by ** Start documentation ** and ** End documentation **
 
-
-        You are currently in development. In development, the scope of your duties are abridged. For this overall task, find all domain controllers on the current network.
+        You are currently in development. In development, the scope of your duties are abridged. For this overall task, find all open SSH and web servers, use documentation if applicable. Write your final analysis out.
         """
-        # You are currently in development. In development, the scope of your duties are abridged. For this overall task, only identify the available hosts, and the services available on the hosts. Once hosts are services are identified, consolidate the information and descrive the network, machines, and services in 'analysis.txt'. Provide relavent data.
-
+        if self.retrieved != "":
+            prompt += "\n** Start documentation: **\n"
+            for r in self.retrieved:
+                prompt += r
+            prompt += "\n** End documentation: **\n"
+        self.retrieved = ""
+        print(prompt)
         return prompt
 
     def run(self):

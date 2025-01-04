@@ -1,0 +1,100 @@
+[
+    {
+        "type": "function",
+        "function": {
+            "name": "run_nmap_scan",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "args": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "update_memory",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "memory": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "read_file",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "filename": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "mkdir",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "rmdir",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "write_analysis",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "analysis": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "rag_query",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+]

@@ -9,6 +9,7 @@ class Logger:
         self.fieldnames = [
             'action',
             'result',
+            'model',
             'time'
         ]
 
@@ -26,10 +27,11 @@ class Logger:
             print(f"[-] Could not open {self.log_file} for logging")
             sys.exit(1)
 
-    def log(self, action, result):
+    def log(self, action, result, model):
         data = {
             "action": action,
             "result": result,
+            "model": model,
             "time": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
         self._log(data)
