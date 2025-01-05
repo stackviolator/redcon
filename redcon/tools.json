@@ -16,7 +16,7 @@
     {
         "type": "function",
         "function": {
-            "name": "update_memory",
+            "name": "update_short_term_memory",
             "parameters": {
                 "type": "object",
                 "properties": {

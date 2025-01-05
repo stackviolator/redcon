@@ -8,6 +8,7 @@ class Logger:
         self.log_file = "logs/agent_logs.csv"
         self.fieldnames = [
             'action',
+            'input',
             'result',
             'model',
             'time'
@@ -27,9 +28,10 @@ class Logger:
             print(f"[-] Could not open {self.log_file} for logging")
             sys.exit(1)
 
-    def log(self, action, result, model):
+    def log(self, action, input, result, model):
         data = {
             "action": action,
+            "input": input,
             "result": result,
             "model": model,
             "time": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')

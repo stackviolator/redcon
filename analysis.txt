@@ -1,30 +1,54 @@
-analysis: # Reconnaissance Analysis of 192.168.1.0/24
+analysis: # Network Reconnaissance Analysis
 
-## Hosts Found:
+## Overview
+A reconnaissance scan was performed on the internal network with the IP range 172.16.29.0/24. The primary objectives were to identify alive hosts, document the services running on each host, identify domain controllers, and make predictions about the type of each server based on the services identified.
 
-### Host: thefarm.attlocal.net (192.168.1.180)
-- **Ports Open**:
-  - 22/tcp (SSH)
-  - 80/tcp (HTTP)
-- **Port Closed**:
-  - 443/tcp (HTTPS)
+## Alive Hosts
+The following hosts were found to be alive during the scan:
+- 172.16.29.1
+- 172.16.29.5
+- 172.16.29.50
+- 172.16.29.130
+- 172.16.29.133
+- 172.16.29.155
+- 172.16.29.162
+- 172.16.29.174
+- 172.16.29.175
+- 172.16.29.178
 
-### Host: 192.168.1.183
-- **All Ports Closed**:
-  - 22/tcp (SSH)
-  - 80/tcp (HTTP)
-  - 443/tcp (HTTPS)
+## Services and Roles
 
-### Host: dsldevice.attlocal.net (192.168.1.254)
-- **Ports Open**:
-  - 80/tcp (HTTP)
-  - 443/tcp (HTTPS)
-- **Port Closed**:
-  - 22/tcp (SSH)
+### 172.16.29.1
+- **Open Ports**: 22 (SSH), 53 (DNS)
+- **Predicted Role**: SSH server
 
-## Summary
-- Total hosts with open SSH: 1
-- Total hosts with open HTTP: 2
-- Total hosts with open HTTPS: 1
+### 172.16.29.5
+- **Open Ports**: 53 (DNS), 135 (MSRPC), 139 (NetBIOS-SSN), 445 (Microsoft-DS)
+- **Predicted Role**: Windows-based server, potentially involved with file sharing or network services
 
-This scan identified several hosts with potential entry points via open SSH and HTTP services, providing a basis for further targeted testing on these protocols.
+### 172.16.29.50
+- **Open Ports**: 53 (DNS), 88 (Kerberos), 135 (MSRPC), 139 (NetBIOS-SSN), 389 (LDAP), 445 (Microsoft-DS), 464 (Kerberos Password), 593 (HTTP RPC EpMap), 636 (LDAPS)
+- **Predicted Role**: Domain Controller
+
+### 172.16.29.130
+- **Open Ports**: 53 (DNS), 135 (MSRPC), 139 (NetBIOS-SSN), 445 (Microsoft-DS)
+- **Predicted Role**: SMB server
+
+### 172.16.29.133
+- **Open Ports**: 53 (DNS), 135 (MSRPC), 139 (NetBIOS-SSN), 445 (Microsoft-DS)
+- **Predicted Role**: SMB server
+
+### 172.16.29.155
+- **Open Ports**: 53 (DNS), 135 (MSRPC), 139 (NetBIOS-SSN), 445 (Microsoft-DS)
+- **Predicted Role**: Windows server with Microsoft services
+
+### 172.16.29.162, 172.16.29.174, 172.16.29.175, 172.16.29.178
+- **Open Ports**: 53 (DNS), 135 (MSRPC), 139 (NetBIOS-SSN), 445 (Microsoft-DS)
+- **Predicted Role**: Similar roles as other file servers
+
+## Conclusion
+The scan identified a total of 10 alive hosts and various open ports utilized across these hosts. A notable domain controller was identified at 172.16.29.50, as evidenced by its unique service portfolio. Other hosts serve roles consistent with file sharing and network services, typical of an internal corporate network environment. The detailed service fingerprinting can support further security assessments or audits, pending authorization.
+
+---
+
+Further penetration testing may reveal detailed vulnerabilities and assessment of service configurations, which are out of the current development scope. This concludes the current reconnaissance phase.

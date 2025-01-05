@@ -3,7 +3,6 @@ from pymilvus import MilvusClient
 from pymilvus import model
 import os
 import re
-from transformers import AutoTokenizer
 
 class VDBClient:
     def __init__(self, db="redcon.db", dim=768, collection_name="default", embedding_fn=model.DefaultEmbeddingFunction()):
@@ -35,7 +34,11 @@ class VDBClient:
             Split the input text into max_tokens chunks
             """
             max_tokens = max_tokens - 10 # milnus does not specify their default tokenizer :( -- therefore splitting at the max token level can cause a mismatch
+
+            # Lazy import to avoid parallelism error
+            from transformers import AutoTokenizer
             tokenizer = AutoTokenizer.from_pretrained(tokenizer)
+
             tokens = tokenizer.encode(text, add_special_tokens=False)
             token_chunks = [tokens[i:i + max_tokens] for i in range(0, len(tokens), max_tokens)]
             text_chunks = [tokenizer.decode(chunk, skip_special_tokens=True) for chunk in token_chunks]

@@ -1,5 +1,6 @@
 import json
 from logger import Logger
+import nmap
 import os
 from openai import OpenAI
 from rag import VDBClient
@@ -8,12 +9,16 @@ import subprocess
 class Agent:
     def __init__(self, model="llama3.1:8b"):
         self.model = model
-        if self.model == "llama3.1:8b":
-            self.client = OpenAI(
-                base_url = 'http://localhost:11434/v1',
-                api_key='ollama', # required, but unused
-            )
-        else:
+        if "llama3.1" in self.model:
+            try:
+                self.client = OpenAI(
+                    base_url = 'http://localhost:11434/v1',
+                    api_key='ollama', # required, but unused
+                )
+            except:
+                print(f"[-] Could not connect to api at http://localhost:11434/v1")
+                import sys; sys.exit(1)
+        elif "gpt-4o" in self.model:
             self.set_api_key()
             self.client = OpenAI()
         self.memory = []
@@ -73,14 +78,16 @@ class Agent:
         Query vector DB for RAG
         """
         query = arguments.get("query")
-        self.retrieved = self.vdbc.retrieve(query)
+        texts = self.vdbc.retrieve(query)
+        self.retrieved = texts
+        return texts # This is pretty much always discarded, really only for debugging
 
     def write_analysis(self, arguments: dict):
         """
         Write analysis to analysis.txt
         """
         try:
-            with open("analysis.txt", "w", encoding="utf-8") as file:
+            with open("analysis.md", "w", encoding="utf-8") as file:
                 for key, value in arguments.items():
                     file.write(f"{key}: {value}\n")
         except Exception as e:
@@ -136,7 +143,7 @@ class Agent:
     def run_nmap_scan(self, arguments: dict) -> str:
         """
         Run nmap scan with provided args
-        NOTE: This jawn runs code, be careful
+        NOTE: This jawn runs code, be careful. Experimented with sandboxed python-nmap, but its output is really bad.
 
         arguments: dict that maps str -> args
         """
@@ -151,14 +158,13 @@ class Agent:
             "return_code": result.returncode
         })
 
-    def update_memory(self, arguments: dict | str):
+    def update_short_term_memory(self, arguments: dict | str):
         """
         Add to self memory
         """
-        memory = arguments['memory'] if isinstance(arguments, dict) else arguments
+        memory = arguments['memory'] if isinstance(arguments, dict) else arguments # if the model calls this itself, the arg is a dict
         self.memory.append(memory)
         self.memory = self.memory[-self.max_memory:]
-        print(f"Updated memory with {memory}")
 
     def read_file(self, arguments: dict) -> str:
         """
@@ -199,9 +205,8 @@ class Agent:
                 print(f"[-] Method '{call.function.name}' not found.")
                 output = None
             except Exception as e:
-                print(f"[-] Error calling method '{call.function.name}': {e}")
-                output = None
-            self.logger.log(data, output, self.model)
+                output = f"[-] Error calling method '{call.function.name}': {e}"
+            self.logger.log("Tool call", data, output, self.model)
             self.update_memory(f"Tool call: {call.function.name} {call.function.arguments}\nOutput: {output}")
 
 
@@ -222,20 +227,20 @@ class Agent:
         )
 
         output = completion.choices[0].message
-        self.logger.log(prompt, output.content, self.model)
-        print(f"Returned output is : {output.content}")
-        if "FINISHED" in str(output.content):
-            return False
+        if output.content == "":
+            output.content = "No text output from prompt" 
+        self.logger.log("Prompt", prompt, output.content, self.model)
+        print(f"Returned output is: {output.content}")
         # TODO: Make this async?
         if output.tool_calls is not None:
             self.handle_tool_calls(output.tool_calls)
+        if "FINISHED" in str(output.content):
+            return False
         return True
 
     def build_prompt(self) -> str:
         context = "\n- ".join(self.memory)
-        prompt = f"""
-        Your goal is to perform reconaissance on the given scope found in './scope.txt'. You will autonomously perform these actions.\nHere is a list of previous actions taken:
-        """
+        prompt = f"Your goal is to perform reconaissance on an internal netowork. When needed, the scope can found in './scope.txt'. You will autonomously perform these actions.\nHere is a list of previous actions taken:\n- "
         prompt += context
         prompt += """\nInstructions:
         - Always give a written justification for you task
@@ -249,15 +254,20 @@ class Agent:
         - When you write your analysis, include pertinent information such as hosts, services, ports, and vulnerabilities that were found during recon. Use markdown format for your analysis.
         - Queried documentation is denoted by ** Start documentation ** and ** End documentation **
 
-        You are currently in development. In development, the scope of your duties are abridged. For this overall task, find all open SSH and web servers, use documentation if applicable. Write your final analysis out.
-        """
+    You are currently in development. In development, the scope of your duties are abridged. Your current objectives are the following:
+    - Find and note all domain controllers 
+    - Find all alive hosts
+    - Document the services on each host
+    - Make predictions about the type of each server based off of their services
+    
+    Use documentation if needed. When finished, synthesize all of your findings to analysis.txt
+    """
         if self.retrieved != "":
             prompt += "\n** Start documentation: **\n"
             for r in self.retrieved:
                 prompt += r
             prompt += "\n** End documentation: **\n"
         self.retrieved = ""
-        print(prompt)
         return prompt
 
     def run(self):
