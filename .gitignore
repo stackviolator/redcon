@@ -9,3 +9,5 @@ scope.txt
 wiki/
 *.db
 .DS_Store
+analysis.txt
+analysis.md
