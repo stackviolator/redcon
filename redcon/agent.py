@@ -166,6 +166,23 @@ class Agent:
         self.memory.append(memory)
         self.memory = self.memory[-self.max_memory:]
 
+    def update_long_term_memory(self, arguments: dict | str):
+        """
+        Write to memory file
+        """
+        memory = arguments['memory'] if isinstance(arguments, dict) else arguments # if the model calls this itself, the arg is a dict
+        with open("memory.txt", "a") as f:
+            f.write(memory + "\n")
+
+        return f"[+] Wrote \"{memory}\" to memory.txt "
+
+    def read_long_term_memory(self):
+        """
+        Read memory.txt and return the string
+        """
+        with open("memory.txt", "r", encoding="utf-8") as file:
+            return file.read()
+
     def read_file(self, arguments: dict) -> str:
         """
         Read file, restricted to the current directory, exclude .env
@@ -253,6 +270,7 @@ class Agent:
         - You have access to your organization's testing methodology, you can access this through a tool call to the vector database
         - When you write your analysis, include pertinent information such as hosts, services, ports, and vulnerabilities that were found during recon. Use markdown format for your analysis.
         - Queried documentation is denoted by ** Start documentation ** and ** End documentation **
+        - You have access to long and short term memory. Short term memory will fade over time, long term will not. However, you will need to write to and query your long term memory when you see fit.
 
     You are currently in development. In development, the scope of your duties are abridged. Your current objectives are the following:
     - Find and note all domain controllers 

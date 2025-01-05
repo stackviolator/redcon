@@ -1,14 +1,27 @@
+# Environment and configuration files
 .env
+
+# Byte-compiled / cache files
 __pycache__/
 __pycache__/*
-scans/
+
+# Logs and analysis files
 logs/
+scans/
 TODO.md
-.vscode/
-scope.txt
-wiki/
-*.db
-.DS_Store
 analysis.txt
 analysis.md
+memory.txt
+
+# Database files
+*.db
+
+# IDE and system files
+.vscode/
+.DS_Store
+
+# Project-specific files
+scope.txt
+wiki/
 redcon/redcon.ipynb
+
