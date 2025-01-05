@@ -1,5 +1,4 @@
 pymilvus
 "pymilvus[model]"
-python-nmap
 openai
 ollama
