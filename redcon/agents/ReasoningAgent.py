@@ -26,7 +26,7 @@ class ReasoningAgent(IAgent):
             self.client = OpenAI()
         self.memory = []
         self.max_memory = 10
-        self.set_system_prompt(self.read_system_prompt("system_prompt.txt"))
+        self.set_system_prompt(self.read_system_prompt("prompts/reasoning.txt"))
         self.init_tools()
         self.logger = Logger()
         self.vdbc = VDBClient()

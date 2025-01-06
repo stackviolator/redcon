@@ -1,9 +1,15 @@
 from redcon.agents.ReasoningAgent import ReasoningAgent
+from redcon.agents.SummaryAgent import SummaryAgent
 
 if __name__ == "__main__":
-    # model = "llama3.1:8b" # damn this thing is stupid
-    model = "gpt-4o"
-    agent = ReasoningAgent(model=model)
+    gpt = "gpt-4o"
+    llama = "llama3.1:8b"
+
+    agent = ReasoningAgent(model=gpt)
+    agent.run()
+    # sagent = SummaryAgent(model=llama)
+    # sagent.run()
+
+
+    # print(agent.rag_query({"query":"Domain controller recon techniques"}))
     # agent.run_nmap_scan({"args":"ballsack lol"})
-    print(agent.rag_query({"query":"Domain controller recon techniques"}))
-    # agent.run()

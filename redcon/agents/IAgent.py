@@ -30,31 +30,31 @@ class IAgent(ABC):
         """
         self.system_prompt = prompt
 
-        @abstractmethod
-        def add_tool(self):
-            pass
+    @abstractmethod
+    def add_tool(self):
+        pass
 
-        @abstractmethod
-        def init_tools(self):
-            pass
+    @abstractmethod
+    def init_tools(self):
+        pass
 
-        @abstractmethod
-        def update_short_term_memory(self):
-            pass
+    @abstractmethod
+    def update_short_term_memory(self):
+        pass
 
-        @abstractmethod
-        def update_long_term_memory(self):
-            pass
+    @abstractmethod
+    def update_long_term_memory(self):
+        pass
 
-        @abstractmethod
-        def handle_tool_calls(self):
-            pass
+    @abstractmethod
+    def handle_tool_calls(self):
+        pass
 
-        @abstractmethod
-        def build_prompt(self):
-            pass
+    @abstractmethod
+    def build_prompt(self):
+        pass
 
-        @abstractmethod
-        def call_api(self):
-            pass
+    @abstractmethod
+    def call_api(self):
+        pass
 
