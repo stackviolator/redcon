@@ -1,5 +1,5 @@
 
-from openai import OpenAi
+from openai import OpenAI
 import json
 import os
 from redcon.agents.IAgent import IAgent
@@ -8,7 +8,9 @@ from redcon.rag import VDBClient
 import subprocess
 
 class ReasoningAgent(IAgent):
-    def __init__(self, model="llama3.1:8b"):
+    def __init__(self, model="llama3.1:8b", *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
         self.model = model
         if "llama3.1" in self.model:
             try:
