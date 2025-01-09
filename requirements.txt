@@ -1,4 +1,7 @@
+accelerate
+torch
 pymilvus
-"pymilvus[model]"
+pymilvus[model]
 openai
 ollama
+smolagents

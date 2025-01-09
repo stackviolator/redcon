@@ -1,5 +1,6 @@
 # Environment and configuration files
 .env
+env-redcon/
 
 # Byte-compiled / cache files
 __pycache__/
@@ -24,4 +25,4 @@ memory.txt
 scope.txt
 wiki/
 redcon/redcon.ipynb
-
+temp/
