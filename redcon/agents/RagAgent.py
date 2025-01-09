@@ -11,7 +11,7 @@ from smolagents import (
 import os
 from redcon.rag import VDBClient
 
-class Agent():
+class RagAgent():
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -63,5 +63,5 @@ class RetrieverTool(Tool):
 
 
 if __name__ == "__main__":
-    agent = Agent()
+    agent = RagAgent()
     GradioUI(agent.agent).launch()

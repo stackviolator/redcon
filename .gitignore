@@ -16,6 +16,7 @@ memory.txt
 
 # Database files
 *.db
+*.db.lock
 
 # IDE and system files
 .vscode/
