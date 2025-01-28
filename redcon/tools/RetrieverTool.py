@@ -1,34 +1,5 @@
-from typing import Optional
-from smolagents import (
-    CodeAgent,
-    HfApiModel,
-    tool,
-    Tool,
-    DuckDuckGoSearchTool,
-    LiteLLMModel,
-    GradioUI
-)
-import os
+from smolagents import Tool
 from redcon.rag import VDBClient
-
-class RagAgent():
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.set_api_key()
-        model = LiteLLMModel(model_id="openai/gpt-4o") # Could use 'gpt-4o'
-        model = HfApiModel()
-        rettool = RetrieverTool()
-        self.agent = CodeAgent(tools=[rettool], model=model, max_steps=4, verbose=True)
-
-    def set_api_key(self, filepath: str = '.env'):
-        """
-        Set the OpenAI API key
-        """
-        with open(filepath, 'r') as f:
-            for line in f:
-                if line.startswith("OPENAI_API_KEY"):
-                    os.environ['OPENAI_API_KEY'] = line.strip().split("=")[-1].strip("\"")
 
 class RetrieverTool(Tool):
     name = "retriever"
@@ -60,8 +31,3 @@ class RetrieverTool(Tool):
                 for i, doc in enumerate(docs)
             ]
         )
-
-
-if __name__ == "__main__":
-    agent = RagAgent()
-    GradioUI(agent.agent).launch()

@@ -58,3 +58,6 @@ class IAgent(ABC):
     def call_api(self):
         pass
 
+    @abstractmethod
+    def run(self):
+        pass
